@@ -10,15 +10,15 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 
 # with tf.Session() as sess:
-# 	sess.run(init)
-# 	print(bias.get_shape().as_list()[0])
-# 	vali_batch_x, vali_batch_y = mnist.validation.next_batch(1)
-# 	print(vali_batch_y[0])
+#   sess.run(init)
+#   print(bias.get_shape().as_list()[0])
+#   vali_batch_x, vali_batch_y = mnist.validation.next_batch(1)
+#   print(vali_batch_y[0])
 with tf.Session() as sess:
     #sess.run(init)
-    saver = tf.train.import_meta_graph('DCNN_MNIST_BN_SMALLER_FILTER_model.meta')
+    saver = tf.train.import_meta_graph('DCNN_MNIST_BN_SMALL_FILTER_model.meta')
     #saver.restore(sess,tf.train.latest_checkpoint('./'))
-    saver.restore(sess,'DCNN_MNIST_BN_SMALLER_FILTER_model')
+    saver.restore(sess,'DCNN_MNIST_BN_SMALL_FILTER_model')
 
     graph = tf.get_default_graph()
     X = graph.get_tensor_by_name("X:0")
