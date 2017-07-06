@@ -6,6 +6,7 @@ from tensorflow.examples.tutorials.mnist import input_data as mnist_data
 
 # Download images and labels into mnist.test (10K images+labels) and mnist.train (60K images+labels)
 mnist = mnist_data.read_data_sets("data", one_hot=True, reshape=False, validation_size=200)
+#mnist = mnist_data.read_data_sets("data", one_hot=True, validation_size=200)
 
 # neural network structure for this sample:
 #
@@ -22,16 +23,17 @@ mnist = mnist_data.read_data_sets("data", one_hot=True, reshape=False, validatio
 #        · · ·                                                     Y [batch, 10]
 
 # input X: 28x28 grayscale images, the first dimension (None) will index the images in the mini-batch
-X = tf.placeholder(tf.float32, [None, 28, 28, 1])
+#X = tf.placeholder(tf.float32, [None, 28, 28, 1], name="X")
+X = tf.placeholder(tf.float32, [None, 784], name="X")
 # correct answers will go here
-Y_ = tf.placeholder(tf.float32, [None, 10])
+Y_ = tf.placeholder(tf.float32, [None, 10], name="Y_")
 # variable learning rate
-lr = tf.placeholder(tf.float32)
+lr = tf.placeholder(tf.float32, name="lr")
 # test flag for batch norm
-tst = tf.placeholder(tf.bool)
-iter = tf.placeholder(tf.int32)
+tst = tf.placeholder(tf.bool, name="tst")
+iter = tf.placeholder(tf.int32, name="iter")
 # dropout probability
-dropout = tf.placeholder(tf.float32)
+dropout = tf.placeholder(tf.float32, name="dropout")
 
 def batchnorm(Ylogits, is_test, iteration, offset, convolutional=False):
     exp_moving_avg = tf.train.ExponentialMovingAverage(0.999, iteration) # adding the iteration prevents from averaging across non-existing iterations
@@ -54,37 +56,48 @@ L = 48  # second convolutional layer output depth
 M = 64  # third convolutional layer
 N = 200  # fully connected layer
 
-W1 = tf.Variable(tf.random_normal([6, 6, 1, K]))  # 6x6 patch, 1 input channel, K output channels
-W2 = tf.Variable(tf.random_normal([5, 5, K, L]))
-W3 = tf.Variable(tf.random_normal([4, 4, L, M]))
-W4 = tf.Variable(tf.random_normal([7 * 7 * M, N]))
-W5 = tf.Variable(tf.random_normal([N, 10]))
+# kernel size: 6->5->4 accuracy: 99.19
+# kernel size: 5->4->3 accuracy: 99.38
+# kernel size: 4->4->3 accuracy: 99.35
+# add dropconnect      accuracy: 99.3
+W1 = tf.Variable(tf.random_normal([5, 5, 1, K]), name="W1")  # 6x6 patch, 1 input channel, K output channels
+W2 = tf.Variable(tf.random_normal([4, 4, K, L]), name="W2")
+W3 = tf.Variable(tf.random_normal([3, 3, L, M]), name="W3")
+W4 = tf.Variable(tf.random_normal([7 * 7 * M, N]), name="W4")
+W5 = tf.Variable(tf.random_normal([N, 10]), name="W5")
 
-B1 = tf.Variable(tf.random_normal([K]))
-B2 = tf.Variable(tf.random_normal([L]))
-B3 = tf.Variable(tf.random_normal([M]))
-B4 = tf.Variable(tf.random_normal([N]))
-B5 = tf.Variable(tf.random_normal([10]))
+B1 = tf.Variable(tf.random_normal([K]), name="B1")
+B2 = tf.Variable(tf.random_normal([L]), name="B2")
+B3 = tf.Variable(tf.random_normal([M]), name="B3")
+B4 = tf.Variable(tf.random_normal([N]), name="B4")
+B5 = tf.Variable(tf.random_normal([10]), name="B5")
 
 
 # The model
 # batch norm scaling is not useful with relus
 # batch norm offsets are used instead of biases
+X = tf.reshape(X, shape=[-1, 28, 28, 1])
 stride = 1  # output is 28x28
+W1 = tf.nn.dropout(W1, dropout)
 Y1l = tf.nn.conv2d(X, W1, strides=[1, stride, stride, 1], padding='SAME')
 Y1bn, update_ema1 = batchnorm(Y1l, tst, iter, B1, convolutional=True)
 Y1 = tf.nn.relu(Y1bn)
 
-stride = 2  # output is 14x14
+k = 2  # output is 14x14
+Y1 = tf.nn.max_pool(Y1, ksize=[1, k, k, 1], strides=[1, k, k, 1], padding='SAME')
+
+stride = 1  
 Y2l = tf.nn.conv2d(Y1, W2, strides=[1, stride, stride, 1], padding='SAME')
 Y2bn, update_ema2 = batchnorm(Y2l, tst, iter, B2, convolutional=True)
 Y2 = tf.nn.relu(Y2bn)
 
-stride = 2  # output is 7x7
+k = 2  # output is 7x7
+Y2 = tf.nn.max_pool(Y2, ksize=[1, k, k, 1], strides=[1, k, k, 1], padding='SAME')
+
+stride = 1 
 Y3l = tf.nn.conv2d(Y2, W3, strides=[1, stride, stride, 1], padding='SAME')
 Y3bn, update_ema3 = batchnorm(Y3l, tst, iter, B3, convolutional=True)
 Y3 = tf.nn.relu(Y3bn)
-
 
 # reshape the output from the third convolution for the fully connected layer
 Y3 = tf.reshape(Y3, shape=[-1, 7 * 7 * M])
@@ -107,15 +120,16 @@ update_ema = tf.group(update_ema1, update_ema2, update_ema3, update_ema4)
 # problems with log(0) which is NaN
 #cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=Ylogits, labels=Y_)
 #cross_entropy = tf.reduce_mean(cross_entropy)*100
-cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Ylogits, labels=Y_))*100
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Ylogits, labels=Y_))
+cost = tf.multiply(cost, 100, name="cost")
 
 # accuracy of the trained model, between 0 (worst) and 1 (best)
 #Y = tf.nn.softmax(Ylogits)
 correct_prediction = tf.equal(tf.argmax(Ylogits, 1), tf.argmax(Y_, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name="accuracy")
 
 # training step, the learning rate is a placeholder
-optimizer = tf.train.AdamOptimizer(lr).minimize(cost)
+optimizer = tf.train.AdamOptimizer(lr).minimize(cost,name="optimizer")
 
 # init
 init = tf.global_variables_initializer()
@@ -137,6 +151,9 @@ def training_step(i):
     # the backpropagation training step
     sess.run(optimizer, feed_dict={X: batch_X, Y_: batch_Y, lr: learning_rate, tst: False, dropout: 0.75})
     sess.run(update_ema, feed_dict={X: batch_X, Y_: batch_Y, tst: False, iter: i, dropout: 1.0})
+
+
+
 
 
 # Launch the graph
@@ -162,12 +179,13 @@ with tf.Session() as sess:
 
 
     print("Optimization Finished!")
-    # Calculate accuracy for 256 mnist test images
+    # save the model parameter
+    saver=tf.train.Saver()
+    saver.save(sess,"DCNN_MNIST_BN_1_model")
+
+    # Calculate accuracy for mnist test images
     print("Testing Accuracy:", \
         sess.run(accuracy, feed_dict={X: mnist.test.images,
                                       Y_: mnist.test.labels,
                                       tst: True,
                                       dropout: 1.}))
-    # save the model parameter
-    saver=tf.train.Saver(max_to_keep=1)
-    saver.save(sess,"DCNN_MNIST_model.ckpt",global_step=0)
