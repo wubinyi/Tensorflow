@@ -1,0 +1,101 @@
+Extracting MNIST_data/train-images-idx3-ubyte.gz
+Extracting MNIST_data/train-labels-idx1-ubyte.gz
+Extracting MNIST_data/t10k-images-idx3-ubyte.gz
+Extracting MNIST_data/t10k-labels-idx1-ubyte.gz
+[[[[157  67  76 207 115  95]]
+
+  [[ 88  90 108 206 188  75]]
+
+  [[ 65 113  80 142  83  60]]
+
+  [[128 165  20 131  90 100]]
+
+  [[111 220 123 112  46  82]]]
+
+
+ [[[123 170  50  81 142 178]]
+
+  [[172  52  81 196  43 179]]
+
+  [[117 151  77  56 149 102]]
+
+  [[106 229  82 108  37 155]]
+
+  [[190  80 179  32 125 217]]]
+
+
+ [[[119 105  93  70 147 149]]
+
+  [[157  32  58 120 115 192]]
+
+  [[144 110 124 145 134 167]]
+
+  [[102 180 105 146  56 204]]
+
+  [[155 158 158 115 125 190]]]
+
+
+ [[[ 41   0 126  14 144 176]]
+
+  [[124  16  75  80 153 143]]
+
+  [[ 75  69 147  46  16 188]]
+
+  [[167 145 126  63  69 255]]
+
+  [[163 146 129  88 105 174]]]
+
+
+ [[[ 78  33  97 101 197 147]]
+
+  [[ 97  66 156 103 123 117]]
+
+  [[ 79  70 140 138 115 175]]
+
+  [[139  72 161 134  61  66]]
+
+  [[122 151 143  87 111 120]]]]
+
+(1, 784)
+float32
+
+Reshape_eightbit_quantize_X:0
+(1, 784)
+uint8
+
+W1_quint8_const:0
+(5, 5, 1, 6)
+uint8
+
+first_conv_eightbit_quantized_conv:0
+(1, 24, 24, 6)
+int32
+
+first_conv_eightbit_requantize:0
+(1, 24, 24, 6)
+uint8
+
+first_conv:0
+(1, 24, 24, 6)
+float32
+
+B1:0
+(6,)
+float32
+
+Add:0
+(1, 24, 24, 6)
+float32
+
+Y1_eightbit_quantize_Add:0
+(1, 24, 24, 6)
+uint8
+
+Y1_eightbit_quantized:0
+(1, 24, 24, 6)
+uint8
+
+accuracy:0
+()
+float32
+
