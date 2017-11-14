@@ -1,0 +1,38 @@
+(1, 784)
+float32
+
+reshape_X_eightbit_quantize_X:0
+(1, 784)
+uint8
+
+W1_quint8_const:0
+(5, 5, 1, 6)
+uint8
+
+first_conv_eightbit_quantized_conv:0
+(1, 24, 24, 6)
+int32
+
+first_conv_eightbit_requantize:0
+(1, 24, 24, 6)
+uint8
+
+B1_quint8_const:0
+(6,)
+uint8
+
+first_bias_eightbit_quantized_bias_add:0
+(1, 24, 24, 6)
+int32
+
+first_bias_eightbit_requantize:0
+(1, 24, 24, 6)
+uint8
+
+Y1_eightbit_quantized:0
+(1, 24, 24, 6)
+uint8
+
+accuracy:0
+()
+float32
