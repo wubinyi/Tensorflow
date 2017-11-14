@@ -79,15 +79,18 @@ X = tf.reshape(X, shape=[-1, 28, 28, 1], name='reshape_X')
 
 stride = 1  # output is 24x24
 Y1l = tf.nn.conv2d(X, W1, strides=[1, stride, stride, 1], padding='VALID', name='first_conv')
-Y1 = tf.nn.relu(tf.add(Y1l, B1), name="Y1")
+Y1bias = tf.nn.bias_add(Y1l, B1, name='first_bias')
+Y1 = tf.nn.relu(Y1bias, name="Y1")
 
 stride = 1  # output is 21x21
 Y2l = tf.nn.conv2d(Y1, W2, strides=[1, stride, stride, 1], padding='VALID', name='second_conv')
-Y2 = tf.nn.relu(tf.add(Y2l, B2), name="Y2")
+Y2bias = tf.nn.bias_add(Y2l, B2, name='second_bias')
+Y2 = tf.nn.relu(Y2bias, name="Y2")
 
 stride = 1  # output is 19x19
 Y3l = tf.nn.conv2d(Y2, W3, strides=[1, stride, stride, 1], padding='VALID', name='third_onv')
-Y3 = tf.nn.relu(tf.add(Y3l, B3), name="Y3")
+Y3bias = tf.nn.bias_add(Y3l, B3, name='third_bias')
+Y3 = tf.nn.relu(Y3bias, name="Y3")
 
 # reshape the output from the third convolution for the fully connected layer
 Y3 = tf.reshape(Y3, shape=[-1, 19 * 19 * M], name='reshape_after_conv')
@@ -147,7 +150,7 @@ with tf.Session() as sess:
     sess.run(init)
     step = 1
     # Keep training until reach max iterations
-    while step < 401:#14001:
+    while step < 14001: #401:
 
         training_step(step)
 
@@ -169,7 +172,7 @@ with tf.Session() as sess:
     # as model as .pb
     # graph_def = tf.get_default_graph().as_graph_def()
     output_graph_def = graph_util.convert_variables_to_constants(sess, sess.graph_def, ['accuracy'])
-    with tf.gfile.GFile("saved_model/dcnn_mnist_v2.pb", "wb") as f:
+    with tf.gfile.GFile("saved_model/dcnn_mnist_v2_2.pb", "wb") as f:
            f.write(output_graph_def.SerializeToString())
 
     # Calculate accuracy for mnist test images
