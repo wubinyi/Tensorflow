@@ -70,9 +70,13 @@ with tf.Session() as sess:
 								# 											'BiasAdd_eightbit_requantize:0','Y1_eightbit_quantized:0','accuracy:0']) 
         # version V2_2
         output = tf.import_graph_def(graph_def, input_map={'X:0': X, 'Y_:0': Y_,'dropout:0': dropout}, 
-														return_elements=['reshape_X_eightbit_quantize_X:0','W1_quint8_const:0',
+														return_elements=['reshape_X_eightbit_quantize_X:0', 'reshape_X_eightbit_quantized_reshape:0',
+																			'reshape_X_eightbit_min_X:0','reshape_X_eightbit_max_X:0',
+																			'W1_min:0', 'W1_max:0', 'W1_quint8_const:0',
 																			'first_conv_eightbit_quantized_conv:0','first_conv_eightbit_requantize:0',
-																			'B1_quint8_const:0','first_bias_eightbit_quantized_bias_add:0',
+																			'first_conv_eightbit_requant_range:0',
+																			'B1_quint8_const:0', 'B1_min:0', 'B1_max:0',
+																			'first_bias_eightbit_quantized_bias_add:0','first_bias_eightbit_requant_range:0',
 																			'first_bias_eightbit_requantize:0','Y1_eightbit_quantized:0','accuracy:0']) 
         batch_X, batch_Y = mnist.train.next_batch(1)
         # print(sess.run(output, feed_dict={X: batch_X, #mnist.test.next_batch(64)[0],
@@ -81,12 +85,16 @@ with tf.Session() as sess:
         output_list = sess.run(output, feed_dict={X: batch_X, #mnist.test.next_batch(64)[0],
                               Y_: batch_Y,                    #mnist.test.labels[0],
                               dropout: 1.})
-print('')
+print('X:0')
 print(batch_X.shape)
 print(batch_X.dtype)
 # print(type(batch_X))
-np.savetxt('model_parameter/V2_2/X:0', batch_X, fmt='%-10.4f')
-np.savetxt('model_parameter/V2_2/Y:0', batch_Y, fmt='%-10.4f')
+np.savetxt('model_parameter/V2_2/X:0', batch_X, fmt='%-14.4f')
+print('')
+print('Y:0')
+print(batch_Y.shape)
+print(batch_Y.dtype)
+np.savetxt('model_parameter/V2_2/Y:0', batch_Y, fmt='%-14.4f')
 # version V2
 # filename_list = ['Reshape_eightbit_quantize_X:0','W1_quint8_const:0',
 # 				'first_conv_eightbit_quantized_conv:0','first_conv_eightbit_requantize:0',
@@ -98,9 +106,13 @@ np.savetxt('model_parameter/V2_2/Y:0', batch_Y, fmt='%-10.4f')
 # 					'B1_quint8_const:0','BiasAdd_eightbit_quantized_bias_add:0',
 # 					'BiasAdd_eightbit_requantize:0','Y1_eightbit_quantized:0','accuracy:0']
 # version V2_2
-filename_list = ['reshape_X_eightbit_quantize_X:0','W1_quint8_const:0',
+filename_list = ['reshape_X_eightbit_quantize_X:0', 'reshape_X_eightbit_quantized_reshape:0',
+					'reshape_X_eightbit_min_X:0','reshape_X_eightbit_max_X:0',
+					'W1_min:0', 'W1_max:0', 'W1_quint8_const:0',
 					'first_conv_eightbit_quantized_conv:0','first_conv_eightbit_requantize:0',
-					'B1_quint8_const:0','first_bias_eightbit_quantized_bias_add:0',
+					'first_conv_eightbit_requant_range:0',
+					'B1_quint8_const:0', 'B1_min:0', 'B1_max:0',
+					'first_bias_eightbit_quantized_bias_add:0','first_bias_eightbit_requant_range:0',
 					'first_bias_eightbit_requantize:0','Y1_eightbit_quantized:0','accuracy:0']
 for op in zip(output_list,filename_list):
 	print('')
@@ -111,4 +123,4 @@ for op in zip(output_list,filename_list):
 	file_path = 'model_parameter/V2_2/'+op[1]
 	# print(type(op[0]))
 	data = op[0].reshape((1,-1))
-	np.savetxt(file_path, data, fmt='%-10.4f')
+	np.savetxt(file_path, data, fmt='%-14.4f')

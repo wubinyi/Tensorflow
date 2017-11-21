@@ -1,0 +1,24 @@
+import/X Placeholder
+import/reshape_X/shape Const
+import/reshape_X_eightbit_reshape_dims Const
+import/reshape_X_eightbit_reduction_dims Const
+import/reshape_X_eightbit_reshape_X Reshape
+import/reshape_X_eightbit_min_X Min
+import/reshape_X_eightbit_max_X Max
+import/reshape_X_eightbit_quantize_X QuantizeV2
+import/reshape_X_eightbit_quantized_reshape QuantizedReshape
+import/W1_quint8_const Const
+import/W1_min Const
+import/W1_max Const
+import/first_conv_eightbit_quantized_conv QuantizedConv2D
+import/first_conv_eightbit_requant_range RequantizationRange
+import/first_conv_eightbit_requantize Requantize
+import/B1_quint8_const Const
+import/B1_min Const
+import/B1_max Const
+import/first_bias_eightbit_quantized_bias_add QuantizedBiasAdd
+import/first_bias_eightbit_requant_range RequantizationRange
+import/first_bias_eightbit_requantize Requantize
+import/Y1_eightbit_quantized QuantizedRelu
+import/Y1 Dequantize
+
